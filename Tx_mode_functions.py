@@ -47,23 +47,10 @@ def check_collisions(nodes_transmitting, gateway, ack_duration):
         #check if any nodes transmit at the same time, including the gateway, and set them to "collided" or not.   
         if((len(nodes_transmitting)>=1 and gateway.get_state() == 'busy') or len(nodes_transmitting)>1 and gateway.get_state() == 'idle'):
             if(gateway.get_state() == 'busy'):
-<<<<<<< HEAD
-                collisions += 1
-                # print(f'{len(nodes_transmitting)} nodes collided with the Gateway**************************************************************')
-                gateway.change_node(ack_duration)
-            for node in nodes_transmitting:
-                if(node.collided == False):
-                    collisions += 1
-                    node.collided = True
-                        # print(f'Collision occured between {collisions} nodes.----------------------------------------------')
-
-        return collisions
-=======
                 gateway.change_node(ack_duration)
             for node in nodes_transmitting:
                 if(node.collided == False):
                     node.collided = True
->>>>>>> f024348b50d3669833f469bb85e47900c46ef58f
     
 def check_uplink_finished(time, nodes_transmitting, RX_delay1, timeout_for_ack, waiting_for_ack):
 #check if any node has finished transmitting. If anyone does, transfer them to the waiting_for_ack list

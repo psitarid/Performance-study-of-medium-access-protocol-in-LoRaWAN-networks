@@ -10,31 +10,18 @@ def check_transmission_success(time, gateway, waiting_for_ack, node_list, nodes_
                 if(node.collided == False and gateway.get_state() == 'idle'):
                     gateway.node_to_send_ack = node.id
                 new_waiting_for_ack.append(node)
-<<<<<<< HEAD
-                
-            elif(time == node.timeout_ends):
-=======
 
             elif(time == node.timeout_ends): 
->>>>>>> f024348b50d3669833f469bb85e47900c46ef58f
                 if(node.ack_received == True):
                     success_num = 1
                     node.set_initial_state(ToA)
                     node_list.append(node)
                 elif(node.ack_received == False):
-<<<<<<< HEAD
-                    success_num = -1
-                    if(node.retransmission_num <40):
-                        node.set_retransmitting_state(time, ToA, T_retransmission)      
-                        nodes_to_retransmit.append(node)
-                    else:
-=======
                     success_num = -1            #make success_num = -1 for this cycle if collision occurs
                     if(node.retransmission_num < 40):
                         node.set_retransmitting_state(time, ToA, T_retransmission)      
                         nodes_to_retransmit.append(node)
                     elif(node.retransmission_num >= 40):
->>>>>>> f024348b50d3669833f469bb85e47900c46ef58f
                         node.set_initial_state(ToA)
                         node_list.append(node)
 
