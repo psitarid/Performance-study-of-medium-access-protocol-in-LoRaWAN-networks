@@ -75,34 +75,21 @@ while(time < sim_duration and (num_to_transmit * ToA/node_step < 2)):
     
     num_to_transmit += select_nodes_to_transmit(time, node_list, nodes_transmitting, nodes_to_retransmit, lambd)
 
-<<<<<<< HEAD
-    check_collisions(nodes_transmitting, gateway, ack_duration)
-=======
     collisions_with_ack = check_collisions(nodes_transmitting, gateway, ack_duration)
->>>>>>> f024348b50d3669833f469bb85e47900c46ef58f
 
     check_uplink_finished(time, nodes_transmitting, RX_delay1, timeout_for_ack, waiting_for_ack)
 
     results_by_cycle = check_transmission_success(time, gateway, waiting_for_ack, node_list, nodes_to_retransmit, ToA, T_retransmission, ack_duration)
     
     if(results_by_cycle == 1):
-<<<<<<< HEAD
-        successful_transmissions += 1
-=======
         successful_transmissions += 2
->>>>>>> f024348b50d3669833f469bb85e47900c46ef58f
     elif(results_by_cycle == -1):
         collisions +=1
     
 
     if(time%node_step == 1):
-<<<<<<< HEAD
-        
-        num_to_transmit = collisions + successful_transmissions
-=======
         collisions += collisions_with_ack
         num_to_transmit = collisions + successful_transmissions + gateway.num_to_transmit
->>>>>>> f024348b50d3669833f469bb85e47900c46ef58f
         nodes_selected.append(num_to_transmit)
         
         G.append(num_to_transmit * ToA/node_step)
@@ -126,11 +113,8 @@ while(time < sim_duration and (num_to_transmit * ToA/node_step < 2)):
         num_to_transmit = 0
         successful_transmissions = 0
         collisions = 0
-<<<<<<< HEAD
-=======
         gateway.num_to_transmit = 0
         collisions_with_ack = 0
->>>>>>> f024348b50d3669833f469bb85e47900c46ef58f
     
     time += 1
         
@@ -177,23 +161,5 @@ plt.tight_layout()
 plt.subplots_adjust(right=0.95)
 
 fig.text(0.63, 0.015, f'SF: {SF}\nlambd: {round(lambd*1000, 4)} pps\nnode step: 1 per {round(node_step/1000)} sec \nsim duration: {sim_duration/60000}mins', fontsize=10, color='black')  # Adjust the position (3, 0.5) and other parameters as needed
-<<<<<<< HEAD
-
-plt.show()
-
-
-
-
-
-
-
-
-
-
-
-
-
-=======
->>>>>>> f024348b50d3669833f469bb85e47900c46ef58f
 
 plt.show()

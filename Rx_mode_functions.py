@@ -9,6 +9,7 @@ def check_transmission_success(time, gateway, waiting_for_ack, node_list, nodes_
             if(time == node.RX_delay1_ends):                                    
                 if(node.collided == False and gateway.get_state() == 'idle'):
                     gateway.node_to_send_ack = node.id
+                    gateway.ack_attempts +=1
                 new_waiting_for_ack.append(node)
 
             elif(time == node.timeout_ends): 
