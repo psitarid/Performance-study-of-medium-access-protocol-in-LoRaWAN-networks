@@ -9,7 +9,6 @@ import math
 
 plt.ion()
 
-
 BW = 125000    # Bandwidth in Hz
 SF = 12        # Spreading Factor
 preamble = 6   # length of preamble in bytes
@@ -17,29 +16,21 @@ payload = 25   # payload in bytes
 header = 0     # Header: if enabled --> 0 |  if disabled --> 1
 CRC = 1        # if enabled --> 1 | if disabled --> 0 | We enable this only during the uplink slot for error detection 
 DE = 1         # when LowDataRateOptimize = 1 -->1 | otherwise --> 0
-CR = 4         # Coding Rate: 4/5 --> 1 | 4/6 --> 2 | 4/7 --> 3 | 4/8 --> 4
+CR = 1         # Coding Rate: 4/5 --> 1 | 4/6 --> 2 | 4/7 --> 3 | 4/8 --> 4
 
 ToA = round(ToA_calc.Time_on_Air(BW, SF, preamble, payload, header, CRC, DE, CR))  # Find the Time on Air based on the parameters
 T_payload = round(ToA_calc.find_payload_no_error_bits(BW, SF, payload, header, CRC, DE, CR))
-# ack_duration = 530
 ack_duration = round(ToA_calc.find_ack_duration(BW, SF, preamble))                                                                 # Duration of Gateway's acknowledgement transmission(530msec)
-RX_delay1 = 1000                                                            # Duration of RX1 delay (1sec)
-# T_node = ToA + ack_duration + RX_delay1                                            # Total time of a node's transmission including the RX delay and the acknowledgment
-timeout_for_ack = 1000
-# timeout_for_ack = 3 * ToA                                                   # Maximum time waiting for acknowledgment to be received
+RX_delay1 = 1000                                                            # Duration of RX1 delay                                             # Total time of a node's transmission including the RX delay and the acknowledgment
+timeout_for_ack = 1000                                                   # Maximum time waiting for acknowledgment to be received
 T_retransmission = 8700
-# T_retransmission = 6* ToA
-
 
 time = 0                                                                    # Represents the time passed from the beggining of the simulation in msecs. Changes in the end of every cycle
 node_num = 0                                                                # Holds the number of total nodes in the system. It increases based on the node_counter.
 node_counter = 0                                                            # Counts cycles until the increasing of each node 
-sim_duration =7200000
-# sim_duration = 1000                                                       # Simulation duration in msecs
-# lambd = 1/200
+sim_duration =7200000                                                       # Simulation duration in msecs
 lambd = 1/50000
-node_step = 2560000 * 2
-# node_step = 3
+node_step = 25600000 * 3
 k = node_step
 
 node_list = []                                                              #Holds the nodes that initiate new transmissions                                                      #Holds the nodes that chose to transmit, or retransmit
@@ -61,7 +52,6 @@ nodes_for_plots = []
 S = []                                                                       #The throughput of the channel                                                                 #Holds the throughput of the channel for a single cycle
 G = []                                                                       #The total traffic load of the channel                                                                 #Holds the total traffic load of the channel for each cycle
 collision_rate = []
-
 num_to_transmit = 0
 successful_transmissions = 0                                                                  #Holds the collision probabillity for each cycle.
 total_successful_transmissions = 0
@@ -73,8 +63,6 @@ gateway = Gateway(ack_duration)
 
 fig, ((ax1, ax2, ax3), (ax4, ax6, ax5)) = plt.subplots(2, 3, figsize=(12, 6))
 node_axis = np.linspace(1, node_num, len(S))
-
-
 
 # Add labels and title for each subplot
 ax1.set(xlabel='Number of Nodes', ylabel='G', title='Plot of G')
@@ -105,8 +93,6 @@ plt.tight_layout()
 plt.subplots_adjust(right=0.95)
 fig.text(0.63, 0.015, f'SF: {SF}\nlambd: {round(lambd*1000, 4)} pps\nnode step: 1 per {round(node_step/1000)} sec \nsim duration: {time/3600000}hours', fontsize=10, color='black')  # Adjust the position (3, 0.5) and other parameters as needed
 
-# while(time < sim_duration):
-# plt.show()
 while(num_to_transmit * ToA/node_step <= 2):
     if(node_num < 1000):
         if(time%node_step == 1):                                           #increase the number of nodes every 20 msec until node number is equal to 1000.
@@ -152,7 +138,6 @@ while(num_to_transmit * ToA/node_step <= 2):
         node_axis = np.linspace(1, node_num, len(S))
 
         # Plot data on each subplot
-                # Plot data on each subplot
         ax1.plot(node_axis, G, label='G', color = 'blue')
         # ax1.scatter(node_axis, G, label='G', color = 'blue')
         ax2.plot(node_axis, S, label='S', color = 'blue')
@@ -167,12 +152,10 @@ while(num_to_transmit * ToA/node_step <= 2):
         ax5.plot(node_axis, len_nodes_to_retransmit, label='nodes_to_retransmit length', color = 'orange')
         ax6.plot(node_axis, nodes_selected, label='Nodes_selected to Transmit', color = 'blue')
         # ax6.scatter(node_axis, nodes_selected, label='Nodes_selected to Transmit', color = 'blue')
-
         
         plt.show()
         plt.pause(0.01)
         
-
         total_successful_transmissions += successful_transmissions
         total_collisions += collisions
         total_num_to_transmit += num_to_transmit
@@ -181,7 +164,6 @@ while(num_to_transmit * ToA/node_step <= 2):
         collisions = 0
         gateway.ack_attempts = 0
         gateway.successful_acks = 0
-    
     
     time += 1
 plt.ioff()
