@@ -9,6 +9,7 @@ class Node:
     timeout_ends = 0                        #The moment of time when the timeout for ack waiting is over. 
     collided = False
     ack_received = False
+    timeout_for_ack = 0
 
 
 
@@ -20,6 +21,7 @@ class Node:
         self.timeout_ends = 0
         self.collided = False
         self.ack_received = False
+        self.timeout_for_ack = 0
 
     def set_initial_state(self, ToA):
         self.time_left = ToA
@@ -29,12 +31,17 @@ class Node:
         self.timeout_ends = 0
         self.collided = False
         self.ack_received = False
+        self.timeout_for_ack = 0
 
-    def set_retransmitting_state(self, time, ToA, T_retransmission):
+    def set_retransmitting_state(self, time, ToA, init_T_retransmission):
         self.time_left = ToA
-        self.random_back_off = time + np.random.randint(1, T_retransmission)
+        self.retransmission_num += 1
+        # self.random_back_off = time + np.random.randint(1, (2**(self.retransmission_num)-1)) #set random back-off time for retransmission, based on the exponential back-off algorithm
+        # self.random_back_off = time + np.random.randint(1, self.retransmission_num * 500)
+        self.random_back_off = time + np.random.randint(1, init_T_retransmission)
         self.RX_delay1_ends = 0
         self.timeout_ends = 0
         self.collided = False
         self.ack_received = False
+        self.timeout_for_ack = 0
 

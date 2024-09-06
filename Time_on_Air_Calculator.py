@@ -31,9 +31,9 @@ def Time_on_Air(BW, SF, preamble, payload, header, CRC, DE, CR):
 def find_ack_duration(BW, SF, preamble):
     payload = 1
     CRC = 0
-    header = 0
+    header = 1
     DE = 0
-    CR = 1
+    CR = 0
     T_symbol = math.pow(2,SF)/BW *1000
     T_preamble = (preamble + 4.25)* T_symbol
     payload_symbols = 8 + np.max(np.ceil((8*payload-4*SF + 28 + 16*CRC - 20*header)/(4*(SF - 2*DE)))*(CR + 4),0)

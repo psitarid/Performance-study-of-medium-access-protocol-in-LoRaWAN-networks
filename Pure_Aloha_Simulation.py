@@ -117,13 +117,11 @@ while(time < sim_duration and (num_to_transmit * ToA/node_step < 2)):
         collisions_with_ack = 0
     
     time += 1
-        
 
 print(f'Total_successful_transmissions: {total_successful_transmissions}')
 print(f'Total_collisions: {total_collisions}')
 print(f'Total_num_to_transmit: {total_num_to_transmit}')
 print(f'\nnode_num = {node_num}')
-
 
 
 # Create a figure and a grid of 2x1 subplots

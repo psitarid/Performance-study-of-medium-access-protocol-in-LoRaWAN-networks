@@ -1,4 +1,4 @@
-def check_transmission_success(time, gateway, waiting_for_ack, node_list, nodes_to_retransmit, ToA, T_retransmission, ack_duration):
+def check_transmission_success(time, gateway, waiting_for_ack, node_list, nodes_to_retransmit, ToA, init_T_retransmission, ack_duration):
     #search in waiting_for_ack for any new node that has finished transmitting without collision.
     #Then include it to the nodes_to_respond list.
     success_num = 0
@@ -20,7 +20,7 @@ def check_transmission_success(time, gateway, waiting_for_ack, node_list, nodes_
                 elif(node.ack_received == False):
                     success_num = -1            #make success_num = -1 for this cycle if collision occurs
                     if(node.retransmission_num < 40):
-                        node.set_retransmitting_state(time, ToA, T_retransmission)      
+                        node.set_retransmitting_state(time, ToA, init_T_retransmission)      
                         nodes_to_retransmit.append(node)
                     elif(node.retransmission_num >= 40):
                         node.set_initial_state(ToA)
