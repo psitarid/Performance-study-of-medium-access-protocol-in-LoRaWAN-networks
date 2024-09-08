@@ -1,7 +1,7 @@
 from Node_Class import Node
 from Gateway_Class import Gateway
 import Time_on_Air_Calculator as ToA_calc
-from Tx_mode_functions import select_nodes_to_transmit, check_collisions, check_uplink_finished
+from Tx_mode_functions import select_nodes_to_transmit, check_collisions, check_uplink_finished, update_time_lived
 from Rx_mode_functions import check_transmission_success
 import matplotlib.pyplot as plt
 import numpy as np
@@ -18,20 +18,24 @@ CRC = 1        # if enabled --> 1 | if disabled --> 0 | We enable this only duri
 DE = 0         # when LowDataRateOptimize = 1 -->1 | otherwise --> 0
 CR = 1         # Coding Rate: 4/5 --> 1 | 4/6 --> 2 | 4/7 --> 3 | 4/8 --> 4
 
+
 ToA = round(ToA_calc.Time_on_Air(BW, SF, preamble, payload, header, CRC, DE, CR))  # Find the Time on Air based on the parameters
 T_payload = round(ToA_calc.find_payload_no_error_bits(BW, SF, payload, header, CRC, DE, CR))
 ack_duration = round(ToA_calc.find_ack_duration(BW, SF, preamble))                                                                 # Duration of Gateway's acknowledgement transmission(530msec)
 RX_delay1 = 1000                                                            # Duration of RX1 delay                                             # Total time of a node's transmission including the RX delay and the acknowledgment
 min_timeout_for_ack = 1000                                                   # Maximum time waiting for acknowledgment to be received
 max_timeout_for_ack = 3000
-init_T_retransmission = 8700
+# init_T_retransmission = 8700
+duty_cycle = 0.01
+init_T_retransmission = ToA/duty_cycle - ToA
 
 time = 0                                                                    # Represents the time passed from the beggining of the simulation in msecs. Changes in the end of every cycle
 node_num = 0                                                                # Holds the number of total nodes in the system. It increases based on the node_counter.
 node_counter = 0                                                            # Counts cycles until the increasing of each node 
 sim_duration =7200000                                                       # Simulation duration in msecs
 lambd = 1/5000
-node_step = 1024000/2
+node_step = int(1024000)
+
 
 node_list = []                                                              #Holds the nodes that initiate new transmissions                                                      #Holds the nodes that chose to transmit, or retransmit
 nodes_to_retransmit = []                                                    #Holds the nodes that will retransmit at a random moment of time
@@ -47,7 +51,6 @@ len_node_list = []
 len_nodes_transmitting = []
 len_waiting_for_ack = []
 len_nodes_to_retransmit = []
-nodes_for_plots = []
 #---------------------------------------------------------------------------------------------------------------------------------------------
 S = []                                                                       #The throughput of the channel                                                                 #Holds the throughput of the channel for a single cycle
 G = []                                                                       #The total traffic load of the channel                                                                 #Holds the total traffic load of the channel for each cycle
@@ -62,7 +65,16 @@ total_collisions = 0
 gateway = Gateway(ack_duration)
 
 fig, ((ax1, ax2, ax3), (ax4, ax6, ax5)) = plt.subplots(2, 3, figsize=(12, 6))
-node_axis = np.linspace(1, node_num, len(S))
+
+line_G, = ax1.plot([], [], label='G', color='blue')
+line_S, = ax2.plot([], [], label='S', color='blue')
+line_collision_rate, = ax3.plot([], [], label='Collision Rate', color='blue')
+line_S_vs_G, = ax4.plot([], [], label='S', color='blue')
+line_node_list, = ax5.plot([], [], label='node_list length', color='blue')
+line_nodes_transmitting, = ax5.plot([], [], label='nodes_transmitting length', color='red')
+line_waiting_for_ack, = ax5.plot([], [], label='waiting_for_ack length', color='green')
+line_nodes_to_retransmit, = ax5.plot([], [], label='nodes_to_retransmit length', color='orange')
+line_nodes_selected, = ax6.plot([], [], label='Nodes_selected to Transmit', color='blue')
 
 # Add labels and title for each subplot
 ax1.set(xlabel='Number of Nodes', ylabel='G', title='Plot of G')
@@ -71,21 +83,6 @@ ax3.set(xlabel='G', ylabel='Collision_Rate', title='Plot of Collision Rate')
 ax4.set(xlabel='G', ylabel='S', title='Plot of S')
 ax5.set(xlabel='Number of Nodes', ylabel='Number of Nodes', title='Number of nodes in each list')
 ax6.set(xlabel='Nodes existing', ylabel='Nodes selected', title='Nodes selected to transmit')
-
-ax1.plot(node_axis, G, label='G', color = 'blue')
-# ax1.scatter(node_axis, G, label='G', color = 'blue')
-ax2.plot(node_axis, S, label='S', color = 'blue')
-# ax2.scatter(node_axis, S, label='S', color = 'blue')
-ax3.plot(G, collision_rate, label='Collision Rate', color = 'blue')
-# ax3.scatter(G, collision_rate, label='Collision Rate', color = 'blue')
-ax4.plot(G, S, label='S', color = 'blue')
-# ax4.scatter(G, S, label='S', color = 'blue')
-ax5.plot(node_axis, len_node_list, label='node_list length', color = 'blue')
-ax5.plot(node_axis, len_nodes_transmitting, label='nodes_transmitting length', color = 'red')
-ax5.plot(node_axis, len_waiting_for_ack, label='waiting_for_ack length', color = 'green')
-ax5.plot(node_axis, len_nodes_to_retransmit, label='nodes_to_retransmit length', color = 'orange')
-ax6.plot(node_axis, nodes_selected, label='Nodes_selected to Transmit', color = 'blue')
-# ax6.scatter(node_axis, nodes_selected, label='Nodes_selected to Transmit', color = 'blue')
 
 ax5.legend()
 
@@ -118,10 +115,10 @@ while(num_to_transmit * ToA/node_step <= 2):
         num_to_transmit = collisions + successful_transmissions
         nodes_selected.append(num_to_transmit)
         
-        # G.append((num_to_transmit * ToA + gateway.ack_attempts * ack_duration)/node_step)
-        G.append(num_to_transmit * ToA/node_step)
-        # S.append((T_payload * successful_transmissions + ack_duration * gateway.successful_acks)/node_step)
-        S.append(ToA * successful_transmissions/node_step)
+        G.append((num_to_transmit * ToA + gateway.ack_attempts * ack_duration)/node_step)
+        # G.append(num_to_transmit * ToA/node_step)
+        S.append((ToA * successful_transmissions + ack_duration * gateway.successful_acks)/node_step)
+        # S.append(ToA * successful_transmissions/node_step)
 
         if(num_to_transmit > 0):
             # collision_rate.append((collisions + collided_acks)/(num_to_transmit + gateway.ack_attempts))
@@ -138,22 +135,20 @@ while(num_to_transmit * ToA/node_step <= 2):
         node_axis = np.linspace(1, node_num, len(S))
 
         # Plot data on each subplot
-        ax1.plot(node_axis, G, label='G', color = 'blue')
-        # ax1.scatter(node_axis, G, label='G', color = 'blue')
-        ax2.plot(node_axis, S, label='S', color = 'blue')
-        # ax2.scatter(node_axis, S, label='S', color = 'blue')
-        ax3.plot(G, collision_rate, label='Collision Rate', color = 'blue')
-        # ax3.scatter(G, collision_rate, label='Collision Rate', color = 'blue')
-        ax4.plot(G, S, label='S', color = 'blue')
-        # ax4.scatter(G, S, label='S', color = 'blue')
-        ax5.plot(node_axis, len_node_list, label='node_list length', color = 'blue')
-        ax5.plot(node_axis, len_nodes_transmitting, label='nodes_transmitting length', color = 'red')
-        ax5.plot(node_axis, len_waiting_for_ack, label='waiting_for_ack length', color = 'green')
-        ax5.plot(node_axis, len_nodes_to_retransmit, label='nodes_to_retransmit length', color = 'orange')
-        ax6.plot(node_axis, nodes_selected, label='Nodes_selected to Transmit', color = 'blue')
-        # ax6.scatter(node_axis, nodes_selected, label='Nodes_selected to Transmit', color = 'blue')
-        
-        plt.show()
+        line_G.set_data(node_axis, G)
+        line_S.set_data(node_axis, S)
+        line_collision_rate.set_data(G, collision_rate)
+        line_S_vs_G.set_data(G, S)
+        line_node_list.set_data(node_axis, len_node_list)
+        line_nodes_transmitting.set_data(node_axis, len_nodes_transmitting)
+        line_waiting_for_ack.set_data(node_axis, len_waiting_for_ack)
+        line_nodes_to_retransmit.set_data(node_axis, len_nodes_to_retransmit)
+        line_nodes_selected.set_data(node_axis, nodes_selected)
+
+        # Adjust plot limits and redraw
+        for ax in [ax1, ax2, ax3, ax4, ax5, ax6]:
+            ax.relim()
+            ax.autoscale_view()
         plt.pause(0.01)
         
         total_successful_transmissions += successful_transmissions
@@ -165,23 +160,20 @@ while(num_to_transmit * ToA/node_step <= 2):
         gateway.ack_attempts = 0
         gateway.successful_acks = 0
     
+    update_time_lived(node_list, nodes_to_retransmit, waiting_for_ack, nodes_transmitting)
     time += 1
 plt.ioff()
 
-ax1.plot(node_axis, G, label='G', color = 'blue')
-# ax1.scatter(node_axis, G, label='G', color = 'blue')
-ax2.plot(node_axis, S, label='S', color = 'blue')
-# ax2.scatter(node_axis, S, label='S', color = 'blue')
-ax3.plot(G, collision_rate, label='Collision Rate', color = 'blue')
-# ax3.scatter(G, collision_rate, label='Collision Rate', color = 'blue')
-ax4.plot(G, S, label='S', color = 'blue')
-# ax4.scatter(G, S, label='S', color = 'blue')
-ax5.plot(node_axis, len_node_list, label='node_list length', color = 'blue')
-ax5.plot(node_axis, len_nodes_transmitting, label='nodes_transmitting length', color = 'red')
-ax5.plot(node_axis, len_waiting_for_ack, label='waiting_for_ack length', color = 'green')
-ax5.plot(node_axis, len_nodes_to_retransmit, label='nodes_to_retransmit length', color = 'orange')
-ax6.plot(node_axis, nodes_selected, label='Nodes_selected to Transmit', color = 'blue')
-# ax6.scatter(node_axis, nodes_selected, label='Nodes_selected to Transmit', color = 'blue')
+node_axis = np.linspace(1, node_num, len(S))
+line_G.set_data(node_axis, G)
+line_S.set_data(node_axis, S)
+line_collision_rate.set_data(G, collision_rate)
+line_S_vs_G.set_data(G, S)
+line_node_list.set_data(node_axis, len_node_list)
+line_nodes_transmitting.set_data(node_axis, len_nodes_transmitting)
+line_waiting_for_ack.set_data(node_axis, len_waiting_for_ack)
+line_nodes_to_retransmit.set_data(node_axis, len_nodes_to_retransmit)
+line_nodes_selected.set_data(node_axis, nodes_selected)
 
 
 plt.show()

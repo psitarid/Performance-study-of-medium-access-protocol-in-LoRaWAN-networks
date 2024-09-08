@@ -21,7 +21,7 @@ def select_nodes_to_transmit(time, node_list, nodes_transmitting, nodes_to_retra
     #check if any nodes want to retransmit
     if(len(nodes_to_retransmit)>0):
         for j in nodes_to_retransmit:
-            if(time == (j.random_back_off)):
+            if(time == (j.retransmission_time)):
                 nodes_transmitting.append(j)
                 nodes_attempted_to_retransmit+=1
             else:
@@ -64,3 +64,13 @@ def check_uplink_finished(time, nodes_transmitting, RX_delay1, min_timeout_for_a
         for node in new_nodes_transmitting:
             node.time_left -= 1
             nodes_transmitting.append(node)
+
+def update_time_lived(node_list, nodes_to_retransmit, waiting_for_ack, nodes_transmitting):
+        for node in node_list:
+            node.time_lived+=1
+        for node in nodes_to_retransmit:
+            node.time_lived+=1
+        for node in waiting_for_ack:
+            node.time_lived+=1
+        for node in nodes_transmitting:
+            node.time_lived+=1
