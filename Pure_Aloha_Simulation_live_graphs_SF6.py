@@ -34,7 +34,7 @@ node_num = 0                                                                # Ho
 node_counter = 0                                                            # Counts cycles until the increasing of each node 
 sim_duration =7200000                                                       # Simulation duration in msecs
 lambd = 1/5000
-node_step = int(1024000)
+node_step = int(1024000/3)
 
 
 node_list = []                                                              #Holds the nodes that initiate new transmissions                                                      #Holds the nodes that chose to transmit, or retransmit

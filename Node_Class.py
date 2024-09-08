@@ -46,9 +46,9 @@ class Node:
         if (self.time_lived <= 3600000):
             self.duty_cycle = 0.01
         elif(self.time_lived >3600 and self.time_lived <= 36000000):
-            self.duty_cycle = 0.01
+            self.duty_cycle = 0.001
         elif(self.time_lived >36000000):
-            self.duty_cycle = 0.01
+            self.duty_cycle = 0.0001
         # max_back_off = int((ToA/self.duty_cycle)-ToA)
         # max_back_off  = int(self.random_back_off +0.4 * self.random_back_off)
         # if max_back_off == 1:
