@@ -5,11 +5,8 @@ class Gateway:
     ack_collided = False
     ack_attempts = 0
     successful_acks = 0
-    ack = False
-    
     
     def __init__(self, ack_duration):
-        self.ack = False
         self.ack_time_left = ack_duration
         self.state = 'idle'
         self.node_to_send_ack = 0

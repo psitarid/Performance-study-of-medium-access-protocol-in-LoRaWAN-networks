@@ -30,13 +30,13 @@ class Simulation:
             self.collisions +=1
         
     
-    def update_metrics_per_node_step(self, node_step, gateway, ToA, G, S, node_list, nodes_to_retransmit, nodes_transmitting, waiting_for_ack, collision_rate, len_node_list, len_nodes_transmitting, len_waiting_for_ack, len_nodes_to_retransmit, nodes_selected):
+    def update_metrics_per_node_step(self, node_step, gateway, ToA, G, S, node_list, nodes_to_retransmit, nodes_transmitting, waiting_for_ack, collision_rate, len_node_list, len_nodes_transmitting, len_waiting_for_ack, len_nodes_to_retransmit, nodes_selected, ack_duration):
             collided_acks = gateway.ack_attempts - gateway.successful_acks
             self.num_to_transmit = self.collisions + self.successful_transmissions
             nodes_selected.append(self.num_to_transmit)
-            # G.append((num_to_transmit * ToA + gateway.ack_attempts * ack_duration)/node_step)
+            # G.append((self.num_to_transmit * ToA + gateway.ack_attempts * ack_duration)/node_step)
             G.append(self.num_to_transmit * ToA/node_step)
-            # S.append((ToA * successful_transmissions + ack_duration * gateway.successful_acks)/node_step)
+            # S.append((ToA * self.successful_transmissions + ack_duration * gateway.successful_acks)/node_step)
             S.append(ToA * self.successful_transmissions/node_step)
             
             if(self.num_to_transmit > 0):

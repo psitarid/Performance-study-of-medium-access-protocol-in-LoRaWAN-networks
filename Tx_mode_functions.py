@@ -32,7 +32,7 @@ def select_nodes_to_transmit(time, lambd, ToA, node_list, nodes_transmitting, no
         
     for _ in range(num_to_transmit):
         i = np.random.choice(node_list)
-        if (i.time_transmitted + ToA) <= i.allowed_transmission_time:  # Checking if the node exceeds the duty cycle
+        if (i.Toff >= ToA/i.duty_cycle - ToA):  # Wait long enough until the next transmission to comply with duty cycle policy    
             i.time_transmitted += ToA
             nodes_transmitting.append(i)
             node_list.remove(i)
@@ -43,8 +43,9 @@ def select_nodes_to_transmit(time, lambd, ToA, node_list, nodes_transmitting, no
     if(len(nodes_to_retransmit) > 0):
         for j in nodes_to_retransmit:
             if(time == (j.retransmission_time)):
-                if (j.time_transmitted + ToA) <= j.allowed_transmission_time:  # Checking if the node exceeds the duty cycle
-                    j.time_transmitted += np.round(ToA)
+                # if (j.Toff >= ToA*(2**7 - 1)):  # Wait long enough until the next transmission to comply with duty cycle policy
+                if (j.Toff >= ToA/j.duty_cycle - ToA):  # Wait long enough until the next transmission to comply with duty cycle policy
+                    j.time_transmitted += ToA
                     nodes_transmitting.append(j)
                     nodes_attempted_to_retransmit += 1
                 else:
@@ -104,7 +105,7 @@ def check_uplink_finished(time, nodes_transmitting, RX_delay1, min_timeout_for_a
             nodes_transmitting.append(node)
 
 
-def change_d_c_phases(node_list, nodes_to_retransmit, waiting_for_ack, nodes_transmitting):
+def update_time_lived(node_list, nodes_to_retransmit, waiting_for_ack, nodes_transmitting):
     """
     Update the time lived, duty cycle, and allowed transmission time for each node in the given lists.
 
@@ -119,19 +120,26 @@ def change_d_c_phases(node_list, nodes_to_retransmit, waiting_for_ack, nodes_tra
     """
     lists = [node_list, nodes_to_retransmit, waiting_for_ack, nodes_transmitting]
     for nodes in lists:
-        if len(nodes) > 0:
+        if nodes == node_list or nodes == nodes_to_retransmit:
             for node in nodes:
-                node.time_lived += 1                                                                        
-                if node.time_lived <= 3600000:                                                                    
-                    node.duty_cycle = 0.01                                                                                       
-                    node.allowed_transmission_time = 36000                                                                            
-                elif node.time_lived > 3600000 and node.time_lived <= 36000000:                                                                    
-                    node.duty_cycle = 0.001                                                                                      
-                    node.allowed_transmission_time = 36000                                                                           
-                elif node.time_lived > 36000000:                                                                                                
-                    node.duty_cycle = 0.0001                                                                             
-                    node.allowed_transmission_time = 8700                                                                       
-                if(node.time_lived % np.round(node.allowed_transmission_time/node.duty_cycle) == 0):       #reset transmission time in each duty cycle phase                          
-                    node.time_transmitted = 0                  
+                node.Toff +=1
+                node.time_lived += 1
+        else:
+            for node in nodes:
+                node.time_lived +=1
+        
+
+            # if node.time_lived <= 3600000:
+            #     node.duty_cycle = 0.01
+            #     node.allowed_transmission_time = 36000
+            # elif node.time_lived <= 36000000:
+            #     node.duty_cycle = 0.001
+            #     node.allowed_transmission_time = 36000
+            # else:
+            #     node.duty_cycle = 0.0001
+            #     node.allowed_transmission_time = 8700
+
+            # if node.time_lived % np.round(node.allowed_transmission_time / node.duty_cycle) == 0:
+            #     node.time_transmitted = 0                  
 
 
