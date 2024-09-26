@@ -50,6 +50,7 @@ def select_nodes_to_transmit(time, lambd, ToA, node_list, nodes_transmitting, no
                     nodes_attempted_to_retransmit += 1
                 else:
                     unable_to_transmit_because_of_duty_cycle += 1
+                    j.retransmission_time = time + np.random.randint(1, 10000)
                     new_nodes_to_retransmit.append(j)
             else:
                 new_nodes_to_retransmit.append(j)
@@ -93,13 +94,14 @@ def check_uplink_finished(time, nodes_transmitting, RX_delay1, min_timeout_for_a
     if(len(nodes_transmitting) > 0):
         for node in nodes_transmitting:
             if(node.time_left == 0):  # Check if nodes finished transmitting
-                waiting_for_ack.append(node)  # Transfer the finished nodes to waiting_for_ack list
                 node.RX_delay1_ends = time + RX_delay1
                 node.timeout_for_ack = np.random.randint(min_timeout_for_ack, max_timeout_for_ack)
                 node.timeout_ends = time + RX_delay1 + node.timeout_for_ack
+                waiting_for_ack.append(node)  # Transfer the finished nodes to waiting_for_ack list
             else:
                 new_nodes_transmitting = np.append(new_nodes_transmitting, node)
         nodes_transmitting.clear()
+        
         for node in new_nodes_transmitting:
             node.time_left -= 1
             nodes_transmitting.append(node)

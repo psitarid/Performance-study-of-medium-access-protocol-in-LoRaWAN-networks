@@ -32,7 +32,7 @@ class Node:
         self.retransmission_time = 0
         self.time_transmitted = 0
         self.allowed_transmission_time = 36000
-        self.Toff = ToA * (2^7 - 1)
+        self.Toff = ToA /self.duty_cycle
     
     def set_initial_state(self, ToA):
         self.time_left = ToA
@@ -45,8 +45,8 @@ class Node:
         self.retransmission_time = 0
         self.time_transmitted = 0
         self.allowed_transmission_time = 36000
-        self.time_lived = 0
         self.Toff = 0
+        self.time_waited = 0
 
     
     def set_retransmitting_state(self, time, ToA):
@@ -59,5 +59,6 @@ class Node:
         self.ack_received = False
         self.timeout_for_ack = 0
         self.time_waited = 0
+        self.Toff = 0
     
 
