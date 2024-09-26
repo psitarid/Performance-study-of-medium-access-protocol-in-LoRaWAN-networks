@@ -33,10 +33,10 @@ class Simulation:
             collided_acks = gateway.ack_attempts - gateway.successful_acks
             self.num_to_transmit = self.collisions + self.successful_transmissions
             nodes_selected.append(self.num_to_transmit)
-            G.append((self.num_to_transmit * ToA + gateway.ack_attempts * ack_duration)/node_step)
-            # G.append(self.num_to_transmit * ToA/node_step)
-            S.append((ToA * self.successful_transmissions + ack_duration * gateway.successful_acks)/node_step)
-            # S.append(ToA * self.successful_transmissions/node_step)
+            # G.append((self.num_to_transmit * ToA + gateway.ack_attempts * ack_duration)/node_step)
+            G.append(self.num_to_transmit * ToA/node_step)
+            # S.append((ToA * self.successful_transmissions + ack_duration * gateway.successful_acks)/node_step)
+            S.append(ToA * self.successful_transmissions/node_step)
             
             if(self.num_to_transmit > 0):
                 collision_rate.append(self.collisions / self.num_to_transmit)
