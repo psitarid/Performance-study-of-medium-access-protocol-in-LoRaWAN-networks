@@ -8,7 +8,7 @@ from Rx_mode_functions import check_transmission_success
 import matplotlib.pyplot as plt
 import numpy as np
 
-plt.ion()
+# plt.ion()
 
 BW = 125000    # Bandwidth in Hz
 SF = 12        # Spreading Factor
@@ -26,8 +26,9 @@ min_timeout_for_ack = 1000
 max_timeout_for_ack = 3000
 
 #Node_related_parameters
-lambd = 1/50000
-node_step = int(25600000/3)
+lambd = 1/5000
+node_step = int(25600000)
+duty_cycle = 0.01
 
 #Lists to store nodes in different states
 node_list = []
@@ -83,12 +84,12 @@ plt.subplots_adjust(right=0.95)
 fig.text(0.63, 0.015, f'SF: {SF}\nlambd: {round(lambd*1000, 4)} pps\nnode step: 1 per {round(node_step/1000)} sec \nsim duration: {time/3600000}hours', fontsize=10, color='black')  # Adjust the position (3, 0.5) and other parameters as needed
 
 #simulation loop that represents duration of 1 msec
-while(sim.num_to_transmit * ToA/node_step <= 2):
+while(sim.num_to_transmit * ToA/node_step <= 0.3):
     if(sim.node_num < 1000):                        #Maximum node number allowed is 1000
         if(time % node_step == 1):              #After every node_step interval add one node to the node_array 
             sim.node_num += 1
-            node_list.append(Node(sim.node_num, ToA))
-
+            node_list.append(Node(sim.node_num, ToA, duty_cycle))
+    
     #Calculate the number of nodes about to transmit or retransmit within this msec
     sim.num_to_transmit += select_nodes_to_transmit(time, lambd, ToA, node_list, nodes_transmitting, nodes_to_retransmit)
     
@@ -108,27 +109,27 @@ while(sim.num_to_transmit * ToA/node_step <= 2):
         #Every node_step interval, update the metrics for the plots
         sim.update_metrics_per_node_step(node_step, gateway, ToA, G, S, node_list, nodes_to_retransmit, nodes_transmitting, waiting_for_ack, collision_rate, len_node_list, len_nodes_transmitting, len_waiting_for_ack, len_nodes_to_retransmit, nodes_selected, ack_duration)
         
-        # Clear output and redraw the plots
-        clear_output(wait=True)
+        # # Clear output and redraw the plots
+        # clear_output(wait=True)
 
-        node_axis = np.linspace(1, sim.node_num, len(S))
+        # node_axis = np.linspace(1, sim.node_num, len(S))
 
-        # Plot data on each subplot
-        line_G.set_data(node_axis, G)
-        line_S.set_data(node_axis, S)
-        line_collision_rate.set_data(G, collision_rate)
-        line_S_vs_G.set_data(G, S)
-        line_node_list.set_data(node_axis, len_node_list)
-        line_nodes_transmitting.set_data(node_axis, len_nodes_transmitting)
-        line_waiting_for_ack.set_data(node_axis, len_waiting_for_ack)
-        line_nodes_to_retransmit.set_data(node_axis, len_nodes_to_retransmit)
-        line_nodes_selected.set_data(node_axis, nodes_selected)
+        # # Plot data on each subplot
+        # line_G.set_data(node_axis, G)
+        # line_S.set_data(node_axis, S)
+        # line_collision_rate.set_data(G, collision_rate)
+        # line_S_vs_G.set_data(G, S)
+        # line_node_list.set_data(node_axis, len_node_list)
+        # line_nodes_transmitting.set_data(node_axis, len_nodes_transmitting)
+        # line_waiting_for_ack.set_data(node_axis, len_waiting_for_ack)
+        # line_nodes_to_retransmit.set_data(node_axis, len_nodes_to_retransmit)
+        # line_nodes_selected.set_data(node_axis, nodes_selected)
 
-        # Adjust plot limits and redraw
-        for ax in [ax1, ax2, ax3, ax4, ax5, ax6]:
-            ax.relim()
-            ax.autoscale_view()
-        plt.pause(0.01)
+        # # Adjust plot limits and redraw
+        # for ax in [ax1, ax2, ax3, ax4, ax5, ax6]:
+        #     ax.relim()
+        #     ax.autoscale_view()
+        # plt.pause(0.01)
         
         #After plotting the results of node step interval, update the total successful_transmissions, the total collisions and the total number of transmissions 
         sim.update_total_metrics()
@@ -139,7 +140,7 @@ while(sim.num_to_transmit * ToA/node_step <= 2):
     #At the end of every msec, check if the nodes comply with the duty cycle policies and update the time lived for each node
     update_Toff(node_list, nodes_to_retransmit)
     time += 1
-plt.ioff()
+# plt.ioff()
 
 
 node_axis = np.linspace(1, sim.node_num, len(S))
@@ -152,7 +153,7 @@ line_node_list.set_data(node_axis, len_node_list)
 line_nodes_transmitting.set_data(node_axis, len_nodes_transmitting)
 line_waiting_for_ack.set_data(node_axis, len_waiting_for_ack)
 line_nodes_to_retransmit.set_data(node_axis, len_nodes_to_retransmit)
-line_nodes_selected.set_data(node_axis, nodes_selected)
+line_nodes_selected.set_data(node_axis, nodes_selected) 
 
 
 plt.show()

@@ -15,7 +15,7 @@ class Node:
 
 
     
-    def __init__(self, node_ID, ToA):       #Node instance constructor
+    def __init__(self, node_ID, ToA, duty_cycle):       #Node instance constructor
         self.id = node_ID
         self.time_left = ToA
         self.retransmission_time = 0
@@ -25,8 +25,8 @@ class Node:
         self.collided = False
         self.ack_received = False
         self.timeout_for_ack = 0
-        self.duty_cycle = 0.01
-        self.Toff = ToA /self.duty_cycle
+        self.duty_cycle = duty_cycle
+        self.Toff = ToA /self.duty_cycle #> ToA/duty_cycle - ToA
     
     def set_initial_state(self, ToA):
         self.time_left = ToA
@@ -42,7 +42,7 @@ class Node:
     def set_retransmitting_state(self, time, ToA):
         self.time_left = ToA
         self.retransmission_num += 1
-        self.retransmission_time = time + np.random.randint(1, 10000)
+        self.retransmission_time = time + np.random.randint(1, 5000)
         self.RX_delay1_ends = 0
         self.timeout_ends = 0
         self.collided = False
@@ -50,4 +50,3 @@ class Node:
         self.timeout_for_ack = 0
         self.Toff = 0
     
-

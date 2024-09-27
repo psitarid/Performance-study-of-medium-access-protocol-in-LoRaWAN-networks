@@ -3,7 +3,7 @@ from Node_Class import Node
 from Gateway_Class import Gateway
 from Simulation_Class import Simulation
 import Time_on_Air_Calculator as ToA_calc
-from Tx_mode_functions import select_nodes_to_transmit, check_collisions, check_uplink_finished, update_time_lived
+from Tx_mode_functions import select_nodes_to_transmit, check_collisions, check_uplink_finished, update_Toff
 from Rx_mode_functions import check_transmission_success
 import matplotlib.pyplot as plt
 import numpy as np
@@ -30,6 +30,7 @@ max_timeout_for_ack = 3000
 #Node_related parameters
 lambd = 1/5000
 node_step = int(1024000/2)
+duty_cycle = 0.01
 
 #Lists to store nodes in different states
 node_list = []
@@ -88,7 +89,7 @@ while(sim.num_to_transmit * ToA/node_step <= 2):
     if(sim.node_num < 1000):                        #Maximum node number allowed is 1000
         if(time % node_step == 1):              #After every node_step interval add one node to the node_array 
             sim.node_num += 1
-            node_list.append(Node(sim.node_num, ToA))
+            node_list.append(Node(sim.node_num, ToA, duty_cycle))
 
     #Calculate the number of nodes about to transmit or retransmit within this msec
     sim.num_to_transmit += select_nodes_to_transmit(time, lambd, ToA, node_list, nodes_transmitting, nodes_to_retransmit)
@@ -138,7 +139,7 @@ while(sim.num_to_transmit * ToA/node_step <= 2):
         sim.reset_metrics(gateway)
     
     #At the end of every msec, check if the nodes comply with the duty cycle policies and update the time lived for each node
-    update_time_lived(node_list, nodes_to_retransmit, waiting_for_ack, nodes_transmitting)
+    update_Toff(node_list, nodes_to_retransmit, waiting_for_ack, nodes_transmitting)
     time += 1
 plt.ioff()
 
