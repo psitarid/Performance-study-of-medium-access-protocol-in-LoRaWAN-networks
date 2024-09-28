@@ -8,7 +8,7 @@ from Rx_mode_functions import check_transmission_success
 import matplotlib.pyplot as plt
 import numpy as np
 
-# plt.ion()
+plt.ion()
 
 BW = 125000    # Bandwidth in Hz
 SF = 12        # Spreading Factor
@@ -17,7 +17,7 @@ payload = 25   # payload in bytes
 header = 0     # Header: if enabled --> 0 |  if disabled --> 1
 CRC = 1        # if enabled --> 1 | if disabled --> 0 | We enable this only during the uplink slot for error detection 
 DE = 1         # when LowDataRateOptimize = 1 -->1 | otherwise --> 0
-CR = 1         # Coding Rate: 4/5 --> 1 | 4/6 --> 2 | 4/7 --> 3 | 4/8 --> 4
+CR = 4         # Coding Rate: 4/5 --> 1 | 4/6 --> 2 | 4/7 --> 3 | 4/8 --> 4
 
 #Time related parameters
 time = 0
@@ -26,9 +26,9 @@ min_timeout_for_ack = 1000
 max_timeout_for_ack = 3000
 
 #Node_related_parameters
-lambd = 1/5000
+lambd = 1/50000
 node_step = int(25600000)
-duty_cycle = 0.01
+duty_cycle = 1
 
 #Lists to store nodes in different states
 node_list = []
@@ -57,17 +57,16 @@ gateway = Gateway(ack_duration)
 
 
 fig, ((ax1, ax2, ax3), (ax4, ax6, ax5)) = plt.subplots(2, 3, figsize=(12, 6))
-node_axis = np.linspace(1, sim.node_num, len(S))
 
-line_G, = ax1.plot([], [], label='G', color='blue')
-line_S, = ax2.plot([], [], label='S', color='blue')
-line_collision_rate, = ax3.plot([], [], label='Collision Rate', color='blue')
-line_S_vs_G, = ax4.plot([], [], label='S', color='blue')
-line_node_list, = ax5.plot([], [], label='node_list length', color='blue')
-line_nodes_transmitting, = ax5.plot([], [], label='nodes_transmitting length', color='red')
-line_waiting_for_ack, = ax5.plot([], [], label='waiting_for_ack length', color='green')
-line_nodes_to_retransmit, = ax5.plot([], [], label='nodes_to_retransmit length', color='orange')
-line_nodes_selected, = ax6.plot([], [], label='Nodes_selected to Transmit', color='blue')
+line_G, = ax1.plot([], [], color='blue')
+line_S, = ax2.plot([], [], color='blue')
+line_collision_rate, = ax3.plot([], [], color='blue')
+line_S_vs_G, = ax4.plot([], [], color='blue')
+line_node_list, = ax5.plot([], [], label='Initial', color='blue')
+line_nodes_transmitting, = ax5.plot([], [], label='Transmitting', color='red')
+line_waiting_for_ack, = ax5.plot([], [], label='Waiting for Ack', color='green')
+line_nodes_to_retransmit, = ax5.plot([], [], label='Retransmitting', color='orange')
+line_nodes_selected, = ax6.plot([], [], color='blue')
 
 # Add labels and title for each subplot
 ax1.set(xlabel='Number of Nodes', ylabel='G', title='Plot of G')
@@ -84,7 +83,7 @@ plt.subplots_adjust(right=0.95)
 fig.text(0.63, 0.015, f'SF: {SF}\nlambd: {round(lambd*1000, 4)} pps\nnode step: 1 per {round(node_step/1000)} sec \nsim duration: {time/3600000}hours', fontsize=10, color='black')  # Adjust the position (3, 0.5) and other parameters as needed
 
 #simulation loop that represents duration of 1 msec
-while(sim.num_to_transmit * ToA/node_step <= 0.3):
+while(sim.num_to_transmit * ToA/node_step <= 3):
     if(sim.node_num < 1000):                        #Maximum node number allowed is 1000
         if(time % node_step == 1):              #After every node_step interval add one node to the node_array 
             sim.node_num += 1
@@ -109,27 +108,27 @@ while(sim.num_to_transmit * ToA/node_step <= 0.3):
         #Every node_step interval, update the metrics for the plots
         sim.update_metrics_per_node_step(node_step, gateway, ToA, G, S, node_list, nodes_to_retransmit, nodes_transmitting, waiting_for_ack, collision_rate, len_node_list, len_nodes_transmitting, len_waiting_for_ack, len_nodes_to_retransmit, nodes_selected, ack_duration)
         
-        # # Clear output and redraw the plots
-        # clear_output(wait=True)
+        # Clear output and redraw the plots
+        clear_output(wait=True)
 
-        # node_axis = np.linspace(1, sim.node_num, len(S))
+        node_axis = np.linspace(1, sim.node_num, len(S))
 
-        # # Plot data on each subplot
-        # line_G.set_data(node_axis, G)
-        # line_S.set_data(node_axis, S)
-        # line_collision_rate.set_data(G, collision_rate)
-        # line_S_vs_G.set_data(G, S)
-        # line_node_list.set_data(node_axis, len_node_list)
-        # line_nodes_transmitting.set_data(node_axis, len_nodes_transmitting)
-        # line_waiting_for_ack.set_data(node_axis, len_waiting_for_ack)
-        # line_nodes_to_retransmit.set_data(node_axis, len_nodes_to_retransmit)
-        # line_nodes_selected.set_data(node_axis, nodes_selected)
+        # Plot data on each subplot
+        line_G.set_data(node_axis, G)
+        line_S.set_data(node_axis, S)
+        line_collision_rate.set_data(G, collision_rate)
+        line_S_vs_G.set_data(G, S)
+        line_node_list.set_data(node_axis, len_node_list)
+        line_nodes_transmitting.set_data(node_axis, len_nodes_transmitting)
+        line_waiting_for_ack.set_data(node_axis, len_waiting_for_ack)
+        line_nodes_to_retransmit.set_data(node_axis, len_nodes_to_retransmit)
+        line_nodes_selected.set_data(node_axis, nodes_selected)
 
-        # # Adjust plot limits and redraw
-        # for ax in [ax1, ax2, ax3, ax4, ax5, ax6]:
-        #     ax.relim()
-        #     ax.autoscale_view()
-        # plt.pause(0.01)
+        # Adjust plot limits and redraw
+        for ax in [ax1, ax2, ax3, ax4, ax5, ax6]:
+            ax.relim()
+            ax.autoscale_view()
+        plt.pause(0.01)
         
         #After plotting the results of node step interval, update the total successful_transmissions, the total collisions and the total number of transmissions 
         sim.update_total_metrics()
@@ -140,7 +139,7 @@ while(sim.num_to_transmit * ToA/node_step <= 0.3):
     #At the end of every msec, check if the nodes comply with the duty cycle policies and update the time lived for each node
     update_Toff(node_list, nodes_to_retransmit)
     time += 1
-# plt.ioff()
+plt.ioff()
 
 
 node_axis = np.linspace(1, sim.node_num, len(S))
@@ -162,4 +161,4 @@ print(f'Total_collisions: {sim.total_collisions}')
 print(f'Total_num_to_transmit: {sim.total_num_to_transmit}')
 print(f'\nnode_num = {sim.node_num}')
 
-fig.text(0.63, 0.015, f'SF: {SF}\nlambd: {round(lambd*1000, 4)} pps\nnode step: 1 per {round(node_step/1000)} sec \nsim duration: {time/3600000}mins', fontsize=10, color='black')  # Adjust the position (3, 0.5) and other parameters as needed
+fig.text(0.63, 0.015, f'SF: {SF}\nlambd: {round(lambd*1000, 4)} pps\nnode step: 1 per {round(node_step/1000)} sec', fontsize=10, color='black')  # Adjust the position (3, 0.5) and other parameters as needed

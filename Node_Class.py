@@ -1,5 +1,5 @@
 import numpy as np
-from numba import njit
+
 class Node:
     id = 0                                  #The ID of each Node
     time_left = 0                           #The time left for transmission when a node is in transmitting state
@@ -10,7 +10,7 @@ class Node:
     collided = False
     ack_received = False
     timeout_for_ack = 0
-    duty_cycle = 0.01
+    duty_cycle = 0
     Toff = 0
 
 
@@ -42,7 +42,7 @@ class Node:
     def set_retransmitting_state(self, time, ToA):
         self.time_left = ToA
         self.retransmission_num += 1
-        self.retransmission_time = time + np.random.randint(1, 5000)
+        self.retransmission_time = time + int(max(np.random.randint(ToA/self.duty_cycle - ToA, ToA/self.duty_cycle - ToA + 5000), 1))
         self.RX_delay1_ends = 0
         self.timeout_ends = 0
         self.collided = False

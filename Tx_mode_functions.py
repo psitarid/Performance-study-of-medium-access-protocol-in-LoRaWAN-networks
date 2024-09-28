@@ -6,37 +6,44 @@ def select_nodes_to_transmit(time, lambd, ToA, node_list, nodes_transmitting, no
     new_nodes_to_retransmit = []  # Nodes attempting to retransmit
     nodes_attempted_to_retransmit = 0  # Number of nodes attempting to retransmit
     total_nodes_selected = 0  # Total number of nodes selected to transmit
-    unable_to_transmit_because_of_duty_cycle = 0  # Number of nodes unable to transmit due to duty cycle
+    # unable_to_transmit_because_of_duty_cycle = 0  # Number of nodes unable to transmit due to duty cycle
     
+    #find the number of nodes that can transmit in this msec in terms of duty cycle
+    duty_cycle_verified = []
+    for node in node_list:
+        if(node.Toff >= ToA/node.duty_cycle - ToA):
+            duty_cycle_verified.append(node)
+
     # Choose the number of nodes to transmit using Poisson distribution
-    while(num_to_transmit < 0 or num_to_transmit > len(node_list)):
-        num_to_transmit = np.random.poisson(lambd * len(node_list))
-        
-    for _ in range(num_to_transmit):
-        i = np.random.choice(node_list)
-        if (i.Toff >= ToA/i.duty_cycle - ToA):  # Wait long enough until the next transmission to comply with duty cycle policy    
-            nodes_transmitting.append(i)
-            node_list.remove(i)
-        else:
-            unable_to_transmit_because_of_duty_cycle += 1
+    # while(num_to_transmit < 0 or num_to_transmit > len(node_list)):
+        num_to_transmit = max(min(np.random.poisson(lambd * len(node_list)), len(duty_cycle_verified)), 0)# 0<= num_to_transmit <= len(duty_cycle_verified)
+    for i in range(num_to_transmit):
+        i = np.random.choice(duty_cycle_verified)
+        nodes_transmitting.append(i)
+        node_list.remove(i)
+        duty_cycle_verified.remove(i)
+
+    # for i in range(num_to_transmit):
+    #     i = np.random.choice(node_list)
+    #     if (i.Toff >= ToA/i.duty_cycle - ToA):  # Wait long enough until the next transmission to comply with duty cycle policy    
+    #         nodes_transmitting.append(i)
+    #         node_list.remove(i)
+    #     else:
+    #         unable_to_transmit_because_of_duty_cycle += 1
 
     # Check if any nodes want to retransmit
     if(len(nodes_to_retransmit) > 0):
         for j in nodes_to_retransmit:
             if(time == (j.retransmission_time)):
-                if (j.Toff >= ToA/j.duty_cycle - ToA):  # Wait long enough until the next transmission to comply with duty cycle policy
                     nodes_transmitting.append(j)
                     nodes_attempted_to_retransmit += 1
-                else:
-                    unable_to_transmit_because_of_duty_cycle += 1
-                    j.retransmission_time = time + np.random.randint(1, 5000)
-                    new_nodes_to_retransmit.append(j)
             else:
                 new_nodes_to_retransmit.append(j)
-        nodes_to_retransmit[:] = new_nodes_to_retransmit
+        nodes_to_retransmit.clear()
+        for i in new_nodes_to_retransmit:
+            nodes_to_retransmit.append(i)
     
-    total_nodes_selected = num_to_transmit + nodes_attempted_to_retransmit - unable_to_transmit_because_of_duty_cycle
-    
+    total_nodes_selected = num_to_transmit + nodes_attempted_to_retransmit    
     return total_nodes_selected
 
 
@@ -73,16 +80,17 @@ def check_uplink_finished(time, nodes_transmitting, RX_delay1, min_timeout_for_a
     if(len(nodes_transmitting) > 0):
         for node in nodes_transmitting:
             if(node.time_left == 0):  # Check if nodes finished transmitting
+                waiting_for_ack.append(node)  # Transfer the finished nodes to waiting_for_ack list
                 node.RX_delay1_ends = time + RX_delay1
                 node.timeout_for_ack = np.random.randint(min_timeout_for_ack, max_timeout_for_ack)
                 node.timeout_ends = time + RX_delay1 + node.timeout_for_ack
-                waiting_for_ack.append(node)  # Transfer the finished nodes to waiting_for_ack list
+                
             else:
                 new_nodes_transmitting.append(node)
-                node.time_left -=1
-        
-        nodes_transmitting[:] = new_nodes_transmitting
-
+        nodes_transmitting.clear()
+        for node in new_nodes_transmitting:
+            node.time_left -= 1
+            nodes_transmitting.append(node)
 
 def update_Toff(node_list, nodes_to_retransmit):
 
