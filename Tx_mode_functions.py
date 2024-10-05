@@ -2,7 +2,7 @@ import numpy as np
 
 
 def select_nodes_to_transmit(time, lambd, ToA, node_list, nodes_transmitting, nodes_to_retransmit):
-    num_to_transmit = -1  # Number of nodes to transmit
+    num_to_transmit = 0  # Number of nodes to transmit
     new_nodes_to_retransmit = []  # Nodes attempting to retransmit
     nodes_attempted_to_retransmit = 0  # Number of nodes attempting to retransmit
     total_nodes_selected = 0  # Total number of nodes selected to transmit
@@ -16,7 +16,7 @@ def select_nodes_to_transmit(time, lambd, ToA, node_list, nodes_transmitting, no
 
     # Choose the number of nodes to transmit using Poisson distribution
     # while(num_to_transmit < 0 or num_to_transmit > len(node_list)):
-        num_to_transmit = max(min(np.random.poisson(lambd * len(node_list)), len(duty_cycle_verified)), 0)# 0<= num_to_transmit <= len(duty_cycle_verified)
+        num_to_transmit = min(abs(np.random.poisson(lambd * len(node_list))), len(duty_cycle_verified))#  0<= num_to_transmit <= len(duty_cycle_verified)
     for i in range(num_to_transmit):
         i = np.random.choice(duty_cycle_verified)
         nodes_transmitting.append(i)

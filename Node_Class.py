@@ -42,7 +42,8 @@ class Node:
     def set_retransmitting_state(self, time, ToA):
         self.time_left = ToA
         self.retransmission_num += 1
-        self.retransmission_time = time + int(max(np.random.randint(ToA/self.duty_cycle - ToA, ToA/self.duty_cycle - ToA + 5000), 1))
+        self.retransmission_time = time + np.random.randint(1, 10000)
+        # self.retransmission_time = time + int(max(np.random.randint(ToA/self.duty_cycle - ToA, ToA/self.duty_cycle - ToA + 50000), 1))
         self.RX_delay1_ends = 0
         self.timeout_ends = 0
         self.collided = False

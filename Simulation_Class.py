@@ -22,24 +22,26 @@ class Simulation:
     
 
     def update_metrics_per_cycle(self, Tx_results, gateway):
-        if(Tx_results == 1):
-            self.successful_transmissions += 1
-            gateway.successful_acks +=1 
-        elif(Tx_results == -1):
-            self.collisions +=1
-        
+        if(Tx_results > 0):
+            self.successful_transmissions += Tx_results
+            gateway.successful_acks += 1 
+        elif(Tx_results < 0 ):
+            self.collisions += Tx_results/(-1)
+
+    
     
     def update_metrics_per_node_step(self, node_step, gateway, ToA, G, S, node_list, nodes_to_retransmit, nodes_transmitting, waiting_for_ack, collision_rate, len_node_list, len_nodes_transmitting, len_waiting_for_ack, len_nodes_to_retransmit, nodes_selected, ack_duration):
             collided_acks = gateway.ack_attempts - gateway.successful_acks
-            self.num_to_transmit = self.collisions + self.successful_transmissions
-            nodes_selected.append(self.num_to_transmit)
+            # self.num_to_transmit = self.collisions + self.successful_transmissions
+            nodes_selected.append(self.collisions + self.successful_transmissions)
             # G.append((self.num_to_transmit * ToA + gateway.ack_attempts * ack_duration)/node_step)
-            G.append(self.num_to_transmit * ToA/node_step)
+            G.append((self.collisions + self.successful_transmissions) * ToA/node_step)
             # S.append((ToA * self.successful_transmissions + ack_duration * gateway.successful_acks)/node_step)
             S.append(ToA * self.successful_transmissions/node_step)
             
             if(self.num_to_transmit > 0):
                 collision_rate.append(self.collisions / self.num_to_transmit)
+                # collision_rate.append(self.collisions * ToA / node_step)
             else:
                 collision_rate.append(0)
 

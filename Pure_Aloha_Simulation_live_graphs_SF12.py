@@ -13,11 +13,11 @@ plt.ion()
 BW = 125000    # Bandwidth in Hz
 SF = 12        # Spreading Factor
 preamble = 8   # length of preamble in bytes
-payload = 25   # payload in bytes
+payload = 10   # payload in bytes
 header = 0     # Header: if enabled --> 0 |  if disabled --> 1
 CRC = 1        # if enabled --> 1 | if disabled --> 0 | We enable this only during the uplink slot for error detection 
 DE = 1         # when LowDataRateOptimize = 1 -->1 | otherwise --> 0
-CR = 4         # Coding Rate: 4/5 --> 1 | 4/6 --> 2 | 4/7 --> 3 | 4/8 --> 4
+CR = 1         # Coding Rate: 4/5 --> 1 | 4/6 --> 2 | 4/7 --> 3 | 4/8 --> 4
 
 #Time related parameters
 time = 0
@@ -28,7 +28,7 @@ max_timeout_for_ack = 3000
 #Node_related_parameters
 lambd = 1/50000
 node_step = int(25600000)
-duty_cycle = 1
+duty_cycle = 0.01
 
 #Lists to store nodes in different states
 node_list = []
