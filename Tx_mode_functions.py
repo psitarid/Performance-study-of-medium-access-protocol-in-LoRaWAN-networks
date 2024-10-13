@@ -12,32 +12,28 @@ def select_nodes_to_transmit(time, lambd, ToA, node_list, nodes_transmitting, no
     duty_cycle_verified = []
     for node in node_list:
         if(node.Toff >= ToA/node.duty_cycle - ToA):
+        # if node.time_transmitted <= 36000 - ToA:    
             duty_cycle_verified.append(node)
 
     # Choose the number of nodes to transmit using Poisson distribution
-    # while(num_to_transmit < 0 or num_to_transmit > len(node_list)):
         num_to_transmit = min(abs(np.random.poisson(lambd * len(node_list))), len(duty_cycle_verified))#  0<= num_to_transmit <= len(duty_cycle_verified)
     for i in range(num_to_transmit):
         i = np.random.choice(duty_cycle_verified)
+        i.time_transmitted += ToA
         nodes_transmitting.append(i)
         node_list.remove(i)
         duty_cycle_verified.remove(i)
 
-    # for i in range(num_to_transmit):
-    #     i = np.random.choice(node_list)
-    #     if (i.Toff >= ToA/i.duty_cycle - ToA):  # Wait long enough until the next transmission to comply with duty cycle policy    
-    #         nodes_transmitting.append(i)
-    #         node_list.remove(i)
-    #     else:
-    #         unable_to_transmit_because_of_duty_cycle += 1
-
     # Check if any nodes want to retransmit
     if(len(nodes_to_retransmit) > 0):
         for j in nodes_to_retransmit:
-            if(time == (j.retransmission_time)):
+            if time == j.retransmission_time:
+            # if(time == (j.retransmission_time) and j.time_transmitted <= 36000 - ToA):  # Wait long enough until the next transmission to comply with duty cycle policy):
+                    j.time_transmitted += ToA
                     nodes_transmitting.append(j)
                     nodes_attempted_to_retransmit += 1
             else:
+                # j.retransmission_time = time + np.random.randint(1, 80000)
                 new_nodes_to_retransmit.append(j)
         nodes_to_retransmit.clear()
         for i in new_nodes_to_retransmit:
@@ -48,14 +44,6 @@ def select_nodes_to_transmit(time, lambd, ToA, node_list, nodes_transmitting, no
 
 
 def check_collisions(gateway, nodes_transmitting):
-    """
-    Check if any nodes transmit at the same time, including the gateway, and set them to "collided" or not.
-    
-    Args:
-        nodes_transmitting (list): list of nodes currently transmitting.
-        gateway (object): Gateway object.
-        ack_duration (int): Duration of acknowledgment.
-    """
     if((len(nodes_transmitting) >= 1 and gateway.get_state() == 'busy') or len(nodes_transmitting) > 1 and gateway.get_state() == 'idle'):
         if(gateway.get_state() == 'busy'):
             gateway.ack_collided = True
@@ -64,27 +52,16 @@ def check_collisions(gateway, nodes_transmitting):
                 node.collided = True
 
 
-def check_uplink_finished(time, nodes_transmitting, RX_delay1, min_timeout_for_ack, max_timeout_for_ack, waiting_for_ack):
-    """
-    Check if any node has finished transmitting. If anyone does, transfer them to the waiting_for_ack list.
-    
-    Args:
-        time (int): Current simulation time.
-        nodes_transmitting (list): list of nodes currently transmitting.
-        RX_delay1 (int): Delay for receiving acknowledgment.
-        min_timeout_for_ack (int): Minimum timeout duration for acknowledgment.
-        max_timeout_for_ack (int): Maximum timeout duration for acknowledgment.
-        waiting_for_ack (list): list of nodes waiting for acknowledgment.
-    """
+
+
+def check_uplink_finished(time, nodes_transmitting, RX_delay1, max_timeout_for_ack, waiting_for_ack):
     new_nodes_transmitting = []
     if(len(nodes_transmitting) > 0):
         for node in nodes_transmitting:
             if(node.time_left == 0):  # Check if nodes finished transmitting
                 waiting_for_ack.append(node)  # Transfer the finished nodes to waiting_for_ack list
                 node.RX_delay1_ends = time + RX_delay1
-                node.timeout_for_ack = np.random.randint(min_timeout_for_ack, max_timeout_for_ack)
-                node.timeout_ends = time + RX_delay1 + node.timeout_for_ack
-                
+                node.timeout_ends = time + RX_delay1 + max_timeout_for_ack
             else:
                 new_nodes_transmitting.append(node)
         nodes_transmitting.clear()
@@ -92,9 +69,16 @@ def check_uplink_finished(time, nodes_transmitting, RX_delay1, min_timeout_for_a
             node.time_left -= 1
             nodes_transmitting.append(node)
 
-def update_Toff(node_list, nodes_to_retransmit):
 
+
+def update_Toff(time, node_list, nodes_to_retransmit):
     lists = [node_list, nodes_to_retransmit]
-    for nodes in lists:
-        for node in nodes:
-            node.Toff +=1
+    if(time % 3600000 == 1):
+        for nodes in lists:
+            for node in nodes:
+                node.Toff +=1
+                node.time_transmitted = 0
+    else:
+        for nodes in lists:
+            for node in nodes:
+                node.Toff +=1
