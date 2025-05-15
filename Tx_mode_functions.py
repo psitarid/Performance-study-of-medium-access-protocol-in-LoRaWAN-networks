@@ -11,8 +11,8 @@ def select_nodes_to_transmit(time, lambd, ToA, node_list, nodes_transmitting, no
     #find the number of nodes that can transmit in this msec in terms of duty cycle
     duty_cycle_verified = []
     for node in node_list:
-        if(node.Toff >= ToA/node.duty_cycle - ToA):
-        # if node.time_transmitted <= 36000 - ToA:    
+        # if(node.Toff >= ToA/node.duty_cycle - ToA):
+        if node.time_transmitted <= 36000 - ToA:    
             duty_cycle_verified.append(node)
 
     # Choose the number of nodes to transmit using Poisson distribution

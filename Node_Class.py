@@ -11,6 +11,7 @@ class Node:
     ack_received = False
     duty_cycle = 0
     Toff = 0
+    time_transmitted = 0
 
 
     
