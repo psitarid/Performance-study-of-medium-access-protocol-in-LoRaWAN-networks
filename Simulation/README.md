@@ -1,14 +1,22 @@
 ## Simulation
+---
 
-The network simulation of this thesis is developed in Python programming language in a form of an object-oriented project. 
+The network simulation presented in this thesis is developed in Python, following an object-oriented programming approach.
 
-• Gateway_Class.py: Defines the Gateway entity along with its attributes and its functions.
+* **SF6.ipynb**: Initializes parameters, runs the simulation for SF6, and generates relevant graphs for network performance analysis.
 
-• Node_Class.py: Defines the Node entity along with its attributes and its functions.
+* **SF12.ipynb**: Initializes parameters, runs the simulation for SF12, and generates relevant graphs for network performance analysis.
 
-• Simulation.py: Defines the Simulation entity along with its attributes and its functions.
+* **Gateway\_Class.py**: Defines the Gateway entity, including its attributes and methods.
 
-• Tx_mode_functions.py: Contains functions used by every node when transmitting data.
+* **Node\_Class.py**: Defines the Node entity, including its attributes and methods.
 
-• Rx_mode_functions.py: Contains functions used by every node when receiving data.
+* **Simulation.py**: Defines the Simulation entity, including its attributes and methods.
+
+* **Tx\_mode\_functions.py**: Contains functions related to node data transmission.
+
+* **Rx\_mode\_functions.py**: Contains functions related to node data reception.
+
+* **Time\_on\_Air\_Calculator.py**: Calculates the transmission duration of messages based on modulation parameters.
+
 
